@@ -45,7 +45,7 @@ public class HelloApplication extends Application {
 
         Scene scene2 = new Scene(hbox, 500, 500);
 
-        stage.setScene(scene2);
+        stage.setScene(scene);
         stage.show();
     }
 

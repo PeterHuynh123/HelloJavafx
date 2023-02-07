@@ -42,8 +42,8 @@ public class JavaFXBlackJack extends Application {
         playerSideLayout.setMinWidth(525.0);
         HBox playerSideFirstCardRow = new HBox();
         HBox playerSideSecondCardRow = new HBox();
-        Text playerScoreSum = new Text("Your score: ");
         HBox playerButtonLayout = new HBox();
+        Text playerScoretxt = new Text("Your score: ");
 
 
 
@@ -51,17 +51,34 @@ public class JavaFXBlackJack extends Application {
         VBox houseSideLayout = new VBox();
         HBox houseSideFirstCardRow = new HBox();
         HBox houseSideSecondCardRow = new HBox();
-        Text houseScoreSum = new Text("Computer score: ");
+        Text txtHouseResult = new Text("Computer score: ?");
 
         Button btnGetCard = new Button("Get card");
         Button btnBet = new Button("Bet");
         Button btnForfeit = new Button("Forfeit");
 
-        playerScoreSum.setText("Your score: 0");
+        boolean bet = false;
+
+        playerScoretxt.setText("Your score: 0");
 //        System.out.println(playerCardIndex.toString());
+        playerSideFirstCardRow.setMinHeight(254.1);
         playerSideSecondCardRow.setMinHeight(254.1);
-//        ArrayList<Integer> houseFirst2CardIndex  = getFirst2CardIndex();
-//        houseScoreSum.setText("Computer score: " + getTotalCardValue(houseFirst2CardIndex));
+
+
+
+        houseSideFirstCardRow.setMinHeight(254.1);
+        houseSideSecondCardRow.setMinHeight(254.1);
+
+        ArrayList<Integer> playerCardIndex = new ArrayList<>();
+        ArrayList<Integer> houseCardIndex  = new ArrayList<>();
+
+        makeFirst2CardIndex(houseSideFirstCardRow, houseCardIndex, false);
+        while (getTotalCardValue(houseCardIndex) <= 17 && houseSideSecondCardRow.getChildren().size() != 5) {
+            System.out.println(getTotalCardValue(houseCardIndex));
+            System.out.println("hello");
+            houseCardIndex.add(getAnotherCardIndex(houseCardIndex, houseSideFirstCardRow, houseSideSecondCardRow, false));
+        }
+//        txtHouseResult.setText("Computer score: " + getTotalCardValue(houseFirst2CardIndex));
 ////        System.out.println(playerCardIndex.toString());
 //
 //        cardUrl = String.format("file:cards/%d.png", houseFirst2CardIndex.get(0));
@@ -86,8 +103,8 @@ public class JavaFXBlackJack extends Application {
         playerButtonLayout.getChildren().addAll(btnGetCard, btnBet, btnForfeit);
 
 
-        playerSideLayout.getChildren().addAll(playerSideFirstCardRow, playerSideSecondCardRow, playerScoreSum, playerButtonLayout);
-        houseSideLayout.getChildren().addAll(houseSideFirstCardRow, houseSideSecondCardRow, houseScoreSum);
+        playerSideLayout.getChildren().addAll(playerSideFirstCardRow, playerSideSecondCardRow, playerScoretxt, playerButtonLayout);
+        houseSideLayout.getChildren().addAll(houseSideFirstCardRow, houseSideSecondCardRow, txtHouseResult);
 
         playerSideGp.getChildren().addAll(playerSideLayout);
         houseSideGp.getChildren().addAll(houseSideLayout);
@@ -97,26 +114,34 @@ public class JavaFXBlackJack extends Application {
 
         mainLayout.getChildren().addAll(playerSideGp, houseSideGp);
 
+
+
         btnGetCard.setOnAction((ActionEvent handler) -> {
             if (playerCardIndex.size() == 0) {
-                getFirst2CardIndex(playerSideFirstCardRow);
-                playerScoreSum.setText("Your score: " + getTotalCardValue());
+                makeFirst2CardIndex(playerSideFirstCardRow, playerCardIndex, true);
+                playerScoretxt.setText("Your score: " + getTotalCardValue(playerCardIndex));
             } else {
-                playerCardIndex.add(getAnotherCardIndex(playerCardIndex, playerSideFirstCardRow, playerSideSecondCardRow));
-                playerScoreSum.setText("Your score: " + getTotalCardValue());
+                playerCardIndex.add(getAnotherCardIndex(playerCardIndex, playerSideFirstCardRow, playerSideSecondCardRow, true));
+                playerScoretxt.setText("Your score: " + getTotalCardValue(playerCardIndex));
             }
-            getTotalCardValue();
-            });
+            getTotalCardValue(playerCardIndex);
+        });
 
+        btnBet.setOnAction((ActionEvent e) -> {
+            if (!bet) {
+                displayHouse(houseSideFirstCardRow, houseSideSecondCardRow, houseCardIndex, txtHouseResult);
+                getBetResult(playerCardIndex, houseCardIndex, getTotalCardValue(playerCardIndex), getTotalCardValue(playerCardIndex), boolean bet);
+            }
 
+        });
         
         btnForfeit.setOnAction((ActionEvent e) -> {
             playerSideFirstCardRow.getChildren().clear();
             playerSideSecondCardRow.getChildren().clear();
             playerCardIndex.clear();
-            getTotalCardValue();
-            getFirst2CardIndex(playerSideFirstCardRow);
-            playerScoreSum.setText("Your score: " + getTotalCardValue());
+            getTotalCardValue(playerCardIndex);
+            makeFirst2CardIndex(playerSideFirstCardRow, playerCardIndex, true);
+            playerScoretxt.setText("Your score: " + getTotalCardValue(playerCardIndex));
         });
 
 
@@ -127,40 +152,49 @@ public class JavaFXBlackJack extends Application {
         Stage.show();
     }
 
-    public static void getFirst2CardIndex(HBox playerSideFirstCardRow) {
+    public static void makeFirst2CardIndex(HBox firstCardRow, ArrayList<Integer> cardIndex, boolean isPlayer) {
         int firstCardIndex = (int) ((Math.random() * (52 -  1)) + 1);
         int secondCardIndex = firstCardIndex;
         while (secondCardIndex == firstCardIndex) {
             secondCardIndex = (int) ((Math.random() * (52 -  1)) + 1);
         }
 
-        playerCardIndex.add(firstCardIndex);
-        playerCardIndex.add(secondCardIndex);
+        cardIndex.add(firstCardIndex);
+        cardIndex.add(secondCardIndex);
 
-        String cardUrl = String.format("file:cards/%d.png", playerCardIndex.get(0));
+        ImageView firstCardImgV;
+        ImageView secondCardImgV;
 
-        Image tempCardHolder = new Image(cardUrl);
-        ImageView playerFirstCardImgV = new ImageView(tempCardHolder);
+        if (isPlayer) {
+            String cardUrl = String.format("file:cards/%d.png", cardIndex.get(0));
 
-        cardUrl = String.format("file:cards/%d.png", playerCardIndex.get(1));
+            Image tempCardHolder = new Image(cardUrl);
+            firstCardImgV = new ImageView(tempCardHolder);
 
-        tempCardHolder = new Image(cardUrl);
-        ImageView playerSecondCardImgV = new ImageView(tempCardHolder);
+            cardUrl = String.format("file:cards/%d.png", cardIndex.get(1));
 
-        playerFirstCardImgV.setPreserveRatio(true);
-        playerSecondCardImgV.setPreserveRatio(true);
+            tempCardHolder = new Image(cardUrl);
+            secondCardImgV = new ImageView(tempCardHolder);
+        } else {
+            String cardUrl = "file:cards/mysteriouscard.png";
+            Image tempCardHolder = new Image(cardUrl);
+            firstCardImgV = new ImageView(tempCardHolder);
+            secondCardImgV = new ImageView(tempCardHolder);
+        }
 
-        playerFirstCardImgV.setFitWidth(175.0);
-        playerSecondCardImgV.setFitWidth(175.0);
+        firstCardImgV.setPreserveRatio(true);
+        secondCardImgV.setPreserveRatio(true);
+
+        firstCardImgV.setFitWidth(175.0);
+        secondCardImgV.setFitWidth(175.0);
 
 
-        playerSideFirstCardRow.getChildren().addAll(playerFirstCardImgV, playerSecondCardImgV);
-        getTotalCardValue();
+        firstCardRow.getChildren().addAll(firstCardImgV, secondCardImgV);
     };
 
-    public static int getTotalCardValue() {
+    public static int getTotalCardValue(ArrayList<Integer> cardIndex) {
         int totalCardVal = 0;
-        for (int card:playerCardIndex) {
+        for (int card:cardIndex) {
             int cardValue = card%13;
             if (cardValue>10 || cardValue == 0) {
                 cardValue = 10;
@@ -175,16 +209,23 @@ public class JavaFXBlackJack extends Application {
         return totalCardVal;
     };
 
-        public static Integer getAnotherCardIndex(ArrayList<Integer> cardIndexList, HBox firstCardRow, HBox secondCardRow){
+        public static Integer getAnotherCardIndex(ArrayList<Integer> cardIndexList, HBox firstCardRow, HBox secondCardRow, boolean isPlayer){
             int newCardIndex = (int) ((Math.random() * (52 -  1)) + 1);
             for (int cardIndex:cardIndexList) {
                 if (newCardIndex == cardIndex) {
                     newCardIndex += 1;
                 }
             }
+
             String cardUrl = String.format("file:cards/%d.png", newCardIndex);
+
+            if (!isPlayer) {
+                cardUrl = "file:cards/mysteriouscard.png";
+            }
+
             Image tempCardHolder = new Image(cardUrl);
             ImageView playerTempCardImgV = new ImageView(tempCardHolder);
+
 
             playerTempCardImgV.setPreserveRatio(true);
 
@@ -198,9 +239,34 @@ public class JavaFXBlackJack extends Application {
                 System.out.println("Maxed cards pulled");
                 newCardIndex = 100;
             }
-            getTotalCardValue();
+            getTotalCardValue(cardIndexList);
             return newCardIndex;
         };
+
+        public void displayHouse(HBox firstCardRow, HBox secondCardRow, ArrayList<Integer> cardIndexList, Text txtHouseResult) {
+            txtHouseResult.setText("Computer score: " + getTotalCardValue(cardIndexList));
+
+            firstCardRow.getChildren().clear();
+            secondCardRow.getChildren().clear();
+            for (int cardIndex:cardIndexList) {
+                Image tempCardHolder = new Image(String.format("file:cards/%d.png", cardIndex));
+                ImageView TempCardImgV = new ImageView(tempCardHolder);
+                TempCardImgV.setPreserveRatio(true);
+                TempCardImgV.setFitWidth(175.0);
+                if (firstCardRow.getChildren().size() == 3) {
+                    System.out.println("lol");
+                    secondCardRow.getChildren().add(TempCardImgV);
+                }
+                else {
+                    firstCardRow.getChildren().add(TempCardImgV);
+                }
+            }
+        }
+
+        public void getBetResult(ArrayList<Integer> playerCardIndex, ArrayList<Integer> houseCardIndex, int playerScore, int houseScore) {
+            System.out.println("haha");
+            bet = true;
+        }
 
     public static void main(String[] args) {
         launch(args);
