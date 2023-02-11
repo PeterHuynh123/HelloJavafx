@@ -25,6 +25,9 @@ public class JavaFXBlackJack extends Application {
 
     Text txtResult;
 
+    Rectangle playerBg;
+    Rectangle houseBg;
+
     @Override
     public void start(Stage Stage) throws Exception {
         Rectangle bg = new Rectangle(1050.0, 600);
@@ -42,7 +45,7 @@ public class JavaFXBlackJack extends Application {
 
         VBox playerSideLayout = new VBox();
 
-        Rectangle playerBg = new Rectangle();
+        playerBg = new Rectangle();
         playerBg.setWidth(525.0);
         playerBg.setHeight(600.0);
         playerBg.setFill(Color.web("#5ccc7a"));
@@ -57,7 +60,7 @@ public class JavaFXBlackJack extends Application {
 
         VBox houseSideLayout = new VBox();
 
-        Rectangle houseBg = new Rectangle();
+        houseBg = new Rectangle();
         houseBg.setWidth(525.0);
         houseBg.setHeight(600.0);
         houseBg.setFill(Color.web("#cc785c"));
@@ -87,10 +90,13 @@ public class JavaFXBlackJack extends Application {
         makeFirst2CardIndex(houseSideFirstCardRow, houseCardIndex, false);
 
         while (getTotalCardValue(houseCardIndex) < 16 && houseCardIndex.size() != 5) {
-            System.out.println(getTotalCardValue(houseCardIndex));
-            System.out.println(houseCardIndex.size());
+            System.out.println(getTotalCardValue(houseCardIndex) < 16);
+            System.out.println(houseCardIndex.size() != 5);
             houseCardIndex.add(getAnotherCardIndex(houseCardIndex, houseSideFirstCardRow, houseSideSecondCardRow, false));
         }
+        System.out.println(getTotalCardValue(houseCardIndex) < 16);
+        System.out.println(houseCardIndex.size() != 5);
+
 //        txtHouseResult.setText("Computer score: " + getTotalCardValue(houseFirst2CardIndex));
 ////        System.out.println(playerCardIndex.toString());
 //
@@ -125,7 +131,9 @@ public class JavaFXBlackJack extends Application {
 
 
         btnGetCard.setOnAction((ActionEvent handler) -> {
-            txtResult.setText("");
+                    playerBg.setFill(Color.web("#5ccc7a"));
+                    houseBg.setFill(Color.web("#cc785c"));
+                    txtResult.setText("");
                     if (!bet.get()) {
                         if (playerCardIndex.size() == 0) {
                             makeFirst2CardIndex(playerSideFirstCardRow, playerCardIndex, true);
@@ -134,7 +142,6 @@ public class JavaFXBlackJack extends Application {
                             playerCardIndex.add(getAnotherCardIndex(playerCardIndex, playerSideFirstCardRow, playerSideSecondCardRow, true));
                             txtPlayerScore.setText("Your card(s) value: " + getTotalCardValue(playerCardIndex));
                         }
-                        getTotalCardValue(playerCardIndex);
                     } else {
                         playerSideFirstCardRow.getChildren().clear();
                         playerSideSecondCardRow.getChildren().clear();
@@ -149,8 +156,13 @@ public class JavaFXBlackJack extends Application {
 
                         makeFirst2CardIndex(houseSideFirstCardRow, houseCardIndex, false);
                         txtHouseCardValue.setText("Computer card(s) value: ???");
-                        bet.set(false);
 
+
+                        while (getTotalCardValue(houseCardIndex) < 16 && houseCardIndex.size() != 5) {
+                            houseCardIndex.add(getAnotherCardIndex(houseCardIndex, houseSideFirstCardRow, houseSideSecondCardRow, false));
+                        }
+
+                        bet.set(false);
                     }
                 }
         );
@@ -164,6 +176,9 @@ public class JavaFXBlackJack extends Application {
         });
 
         btnForfeit.setOnAction((ActionEvent e) -> {
+            playerBg.setFill(Color.web("#5ccc7a"));
+            houseBg.setFill(Color.web("#cc785c"));
+
             playerSideFirstCardRow.getChildren().clear();
             playerSideSecondCardRow.getChildren().clear();
             playerCardIndex.clear();
@@ -270,22 +285,21 @@ public class JavaFXBlackJack extends Application {
         }
 
         Image tempCardHolder = new Image(cardUrl);
-        ImageView playerTempCardImgV = new ImageView(tempCardHolder);
+        ImageView tempCardImgV = new ImageView(tempCardHolder);
 
 
-        playerTempCardImgV.setPreserveRatio(true);
+        tempCardImgV.setPreserveRatio(true);
 
-        playerTempCardImgV.setFitWidth(175.0);
+        tempCardImgV.setFitWidth(175.0);
 
         if (firstCardRow.getChildren().size() < 3) {
-            firstCardRow.getChildren().addAll(playerTempCardImgV);
+            firstCardRow.getChildren().addAll(tempCardImgV);
         } else if (secondCardRow.getChildren().size() < 2) {
-            secondCardRow.getChildren().addAll(playerTempCardImgV);
+            secondCardRow.getChildren().addAll(tempCardImgV);
         } else {
             System.out.println("Maxed cards pulled");
             newCardIndex = 100;
         }
-        getTotalCardValue(cardIndexList);
         return newCardIndex;
     }
 
@@ -321,16 +335,19 @@ public class JavaFXBlackJack extends Application {
                     basicResultCheck(playerCardValue, houseCardValue);
                 } else {
                     txtResult.setText("YOU'VE WON");
+                    playerBg.setFill(Color.web("#2fd45b"));
+                    houseBg.setFill(Color.web("#cc785c"));
                 }
             }
-        }
-        else if (houseCardIndex.size() == 5) {
+        } else if (houseCardIndex.size() == 5) {
 
             if (houseCardValue <= 21) {
                 if (playerCardIndex.size() == 5 && playerCardValue <= 21) {
                     basicResultCheck(playerCardValue, houseCardValue);
                 } else {
                     txtResult.setText("YOU'VE LOST");
+                    playerBg.setFill(Color.web("#5ccc7a"));
+                    houseBg.setFill(Color.web("#d6592f"));
                 }
             }
         }
@@ -339,10 +356,17 @@ public class JavaFXBlackJack extends Application {
         if (playerCardIndex.size() == 2 && playerCardValue == 21) {
             if (houseCardIndex.size() != 2 || houseCardValue != 21) {
                 txtResult.setText("YOU'VE WON");
-            } else if (houseCardIndex.size() == 2 && houseCardValue == 21)
+                playerBg.setFill(Color.web("#15ff00"));
+                houseBg.setFill(Color.web("#cc785c"));
+            } else if (houseCardIndex.size() == 2 && houseCardValue == 21) {
                 txtResult.setText("DRAW");
-        } else if (houseCardIndex.size() == 2 && playerCardValue == 21) {
-            txtResult.setText("YOU'VE LOST");
+                playerBg.setFill(Color.web("#5ccc7a"));
+                houseBg.setFill(Color.web("#cc785c"));
+            } else if (houseCardIndex.size() == 2 && playerCardValue == 21) {
+                txtResult.setText("YOU'VE LOST");
+                playerBg.setFill(Color.web("#5ccc7a"));
+                houseBg.setFill(Color.web("#ff3c00"));
+            }
         }
 
     }
@@ -351,17 +375,27 @@ public class JavaFXBlackJack extends Application {
         if (playerCardValue > houseCardValue) {
             if (playerCardValue <= 21) {
                 txtResult.setText("YOU'VE WON");
+                playerBg.setFill(Color.web("#15ff00"));
+                houseBg.setFill(Color.web("#cc785c"));
             } else {
                 txtResult.setText("YOU'VE LOST");
+                playerBg.setFill(Color.web("#5ccc7a"));
+                houseBg.setFill(Color.web("#ff3c00"));
             }
         } else if (houseCardValue > playerCardValue) {
             if (houseCardValue <= 21) {
                 txtResult.setText("YOU'VE LOST");
+                playerBg.setFill(Color.web("#5ccc7a"));
+                houseBg.setFill(Color.web("#ff3c00"));
             } else {
                 txtResult.setText("YOU'VE WON");
+                playerBg.setFill(Color.web("#15ff00"));
+                houseBg.setFill(Color.web("#cc785c"));
             }
         } else if (playerCardValue == houseCardValue) {
             txtResult.setText("DRAW");
+            playerBg.setFill(Color.web("#5ccc7a"));
+            houseBg.setFill(Color.web("#cc785c"));
         }
     }
 
