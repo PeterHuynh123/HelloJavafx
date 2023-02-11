@@ -2,12 +2,10 @@ package com.example.helojavafx;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -16,13 +14,17 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import java.net.Inet4Address;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EventListener;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class JavaFXBlackJack extends Application {
-    static ArrayList<Integer> playerCardIndex = new ArrayList<>();
+//    static ArrayList<Integer> playerCardIndex = new ArrayList<>();
+
+    static int playerScore = 5;
+    static int houseScore = 5;
+
+    Text txtResult;
+
     @Override
     public void start(Stage Stage) throws Exception {
         Rectangle bg = new Rectangle(1050.0, 600);
@@ -39,43 +41,54 @@ public class JavaFXBlackJack extends Application {
         houseSideGp.minHeight(600.0);
 
         VBox playerSideLayout = new VBox();
+
+        Rectangle playerBg = new Rectangle();
+        playerBg.setWidth(525.0);
+        playerBg.setHeight(600.0);
+        playerBg.setFill(Color.web("#5ccc7a"));
+
         playerSideLayout.setMinWidth(525.0);
         HBox playerSideFirstCardRow = new HBox();
         HBox playerSideSecondCardRow = new HBox();
         HBox playerButtonLayout = new HBox();
-        Text playerScoretxt = new Text("Your score: ");
-
-
+        Text txtPlayerScore = new Text("Your card(s) value: ");
+        txtResult = new Text("");
 
 
         VBox houseSideLayout = new VBox();
+
+        Rectangle houseBg = new Rectangle();
+        houseBg.setWidth(525.0);
+        houseBg.setHeight(600.0);
+        houseBg.setFill(Color.web("#cc785c"));
+
         HBox houseSideFirstCardRow = new HBox();
         HBox houseSideSecondCardRow = new HBox();
-        Text txtHouseResult = new Text("Computer score: ?");
+        Text txtHouseCardValue = new Text("Computer card(s) value: ?");
 
         Button btnGetCard = new Button("Get card");
         Button btnBet = new Button("Bet");
         Button btnForfeit = new Button("Forfeit");
 
-        boolean bet = false;
+        AtomicBoolean bet = new AtomicBoolean(false);
 
-        playerScoretxt.setText("Your score: 0");
+        txtPlayerScore.setText("Your card(s) value: ");
 //        System.out.println(playerCardIndex.toString());
         playerSideFirstCardRow.setMinHeight(254.1);
         playerSideSecondCardRow.setMinHeight(254.1);
-
 
 
         houseSideFirstCardRow.setMinHeight(254.1);
         houseSideSecondCardRow.setMinHeight(254.1);
 
         ArrayList<Integer> playerCardIndex = new ArrayList<>();
-        ArrayList<Integer> houseCardIndex  = new ArrayList<>();
+        ArrayList<Integer> houseCardIndex = new ArrayList<>();
 
         makeFirst2CardIndex(houseSideFirstCardRow, houseCardIndex, false);
-        while (getTotalCardValue(houseCardIndex) <= 17 && houseSideSecondCardRow.getChildren().size() != 5) {
+
+        while (getTotalCardValue(houseCardIndex) < 16 && houseCardIndex.size() != 5) {
             System.out.println(getTotalCardValue(houseCardIndex));
-            System.out.println("hello");
+            System.out.println(houseCardIndex.size());
             houseCardIndex.add(getAnotherCardIndex(houseCardIndex, houseSideFirstCardRow, houseSideSecondCardRow, false));
         }
 //        txtHouseResult.setText("Computer score: " + getTotalCardValue(houseFirst2CardIndex));
@@ -98,50 +111,74 @@ public class JavaFXBlackJack extends Application {
 //        houseSideFirstCardRow.getChildren().addAll(houseFirstCardImgV, houseSecondCardImgV);
 
 
-
-
         playerButtonLayout.getChildren().addAll(btnGetCard, btnBet, btnForfeit);
 
 
-        playerSideLayout.getChildren().addAll(playerSideFirstCardRow, playerSideSecondCardRow, playerScoretxt, playerButtonLayout);
-        houseSideLayout.getChildren().addAll(houseSideFirstCardRow, houseSideSecondCardRow, txtHouseResult);
+        playerSideLayout.getChildren().addAll(playerSideFirstCardRow, playerSideSecondCardRow, txtPlayerScore, playerButtonLayout, txtResult);
+        houseSideLayout.getChildren().addAll(houseSideFirstCardRow, houseSideSecondCardRow, txtHouseCardValue);
 
-        playerSideGp.getChildren().addAll(playerSideLayout);
-        houseSideGp.getChildren().addAll(houseSideLayout);
-
-
+        playerSideGp.getChildren().addAll(playerBg, playerSideLayout);
+        houseSideGp.getChildren().addAll(houseBg, houseSideLayout);
 
 
         mainLayout.getChildren().addAll(playerSideGp, houseSideGp);
 
 
-
         btnGetCard.setOnAction((ActionEvent handler) -> {
-            if (playerCardIndex.size() == 0) {
-                makeFirst2CardIndex(playerSideFirstCardRow, playerCardIndex, true);
-                playerScoretxt.setText("Your score: " + getTotalCardValue(playerCardIndex));
-            } else {
-                playerCardIndex.add(getAnotherCardIndex(playerCardIndex, playerSideFirstCardRow, playerSideSecondCardRow, true));
-                playerScoretxt.setText("Your score: " + getTotalCardValue(playerCardIndex));
-            }
-            getTotalCardValue(playerCardIndex);
-        });
+            txtResult.setText("");
+                    if (!bet.get()) {
+                        if (playerCardIndex.size() == 0) {
+                            makeFirst2CardIndex(playerSideFirstCardRow, playerCardIndex, true);
+                            txtPlayerScore.setText("Your card(s) value: " + getTotalCardValue(playerCardIndex));
+                        } else {
+                            playerCardIndex.add(getAnotherCardIndex(playerCardIndex, playerSideFirstCardRow, playerSideSecondCardRow, true));
+                            txtPlayerScore.setText("Your card(s) value: " + getTotalCardValue(playerCardIndex));
+                        }
+                        getTotalCardValue(playerCardIndex);
+                    } else {
+                        playerSideFirstCardRow.getChildren().clear();
+                        playerSideSecondCardRow.getChildren().clear();
+                        playerCardIndex.clear();
+
+                        houseSideFirstCardRow.getChildren().clear();
+                        houseSideSecondCardRow.getChildren().clear();
+                        houseCardIndex.clear();
+
+                        makeFirst2CardIndex(playerSideFirstCardRow, playerCardIndex, true);
+                        txtPlayerScore.setText("Your card(s) value: " + getTotalCardValue(playerCardIndex));
+
+                        makeFirst2CardIndex(houseSideFirstCardRow, houseCardIndex, false);
+                        txtHouseCardValue.setText("Computer card(s) value: ???");
+                        bet.set(false);
+
+                    }
+                }
+        );
 
         btnBet.setOnAction((ActionEvent e) -> {
-            if (!bet) {
-                displayHouse(houseSideFirstCardRow, houseSideSecondCardRow, houseCardIndex, txtHouseResult);
-                getBetResult(playerCardIndex, houseCardIndex, getTotalCardValue(playerCardIndex), getTotalCardValue(playerCardIndex), boolean bet);
+            if (!bet.get()) {
+                displayHouse(houseSideFirstCardRow, houseSideSecondCardRow, houseCardIndex, txtHouseCardValue);
+                displayResult(playerCardIndex, houseCardIndex, getTotalCardValue(playerCardIndex), getTotalCardValue(houseCardIndex));
             }
-
+            bet.set(true);
         });
-        
+
         btnForfeit.setOnAction((ActionEvent e) -> {
             playerSideFirstCardRow.getChildren().clear();
             playerSideSecondCardRow.getChildren().clear();
             playerCardIndex.clear();
-            getTotalCardValue(playerCardIndex);
+
+            houseSideFirstCardRow.getChildren().clear();
+            houseSideSecondCardRow.getChildren().clear();
+            houseCardIndex.clear();
+
             makeFirst2CardIndex(playerSideFirstCardRow, playerCardIndex, true);
-            playerScoretxt.setText("Your score: " + getTotalCardValue(playerCardIndex));
+            txtPlayerScore.setText("Your card(s) value: " + getTotalCardValue(playerCardIndex));
+
+            makeFirst2CardIndex(houseSideFirstCardRow, houseCardIndex, false);
+            txtHouseCardValue.setText("Computer card(s) value: ???");
+            bet.set(false);
+            txtResult.setText("");
         });
 
 
@@ -153,10 +190,10 @@ public class JavaFXBlackJack extends Application {
     }
 
     public static void makeFirst2CardIndex(HBox firstCardRow, ArrayList<Integer> cardIndex, boolean isPlayer) {
-        int firstCardIndex = (int) ((Math.random() * (52 -  1)) + 1);
+        int firstCardIndex = (int) ((Math.random() * (52 - 1)) + 1);
         int secondCardIndex = firstCardIndex;
         while (secondCardIndex == firstCardIndex) {
-            secondCardIndex = (int) ((Math.random() * (52 -  1)) + 1);
+            secondCardIndex = (int) ((Math.random() * (52 - 1)) + 1);
         }
 
         cardIndex.add(firstCardIndex);
@@ -190,83 +227,143 @@ public class JavaFXBlackJack extends Application {
 
 
         firstCardRow.getChildren().addAll(firstCardImgV, secondCardImgV);
-    };
+    }
+
+    ;
 
     public static int getTotalCardValue(ArrayList<Integer> cardIndex) {
         int totalCardVal = 0;
-        for (int card:cardIndex) {
-            int cardValue = card%13;
-            if (cardValue>10 || cardValue == 0) {
+        for (int card : cardIndex) {
+            int cardValue = card % 13;
+            if (cardValue > 10 || cardValue == 0) {
                 cardValue = 10;
             }
             if (card == 100) {
                 cardValue = 0;
                 return totalCardVal;
             }
-            System.out.println(cardValue + " " +card);
             totalCardVal += cardValue;
         }
+
+        for (int card : cardIndex) {
+            if ((21 - totalCardVal) >= 10 && card % 13 == 1) {
+                totalCardVal += 10;
+            }
+        }
         return totalCardVal;
-    };
+    }
 
-        public static Integer getAnotherCardIndex(ArrayList<Integer> cardIndexList, HBox firstCardRow, HBox secondCardRow, boolean isPlayer){
-            int newCardIndex = (int) ((Math.random() * (52 -  1)) + 1);
-            for (int cardIndex:cardIndexList) {
-                if (newCardIndex == cardIndex) {
-                    newCardIndex += 1;
-                }
+    ;
+
+    public static Integer getAnotherCardIndex(ArrayList<Integer> cardIndexList, HBox firstCardRow, HBox secondCardRow, boolean isPlayer) {
+        int newCardIndex = (int) ((Math.random() * (52 - 1)) + 1);
+        for (int cardIndex : cardIndexList) {
+            if (newCardIndex == cardIndex) {
+                newCardIndex += 1;
             }
+        }
 
-            String cardUrl = String.format("file:cards/%d.png", newCardIndex);
+        String cardUrl = String.format("file:cards/%d.png", newCardIndex);
 
-            if (!isPlayer) {
-                cardUrl = "file:cards/mysteriouscard.png";
-            }
+        if (!isPlayer) {
+            cardUrl = "file:cards/mysteriouscard.png";
+        }
 
-            Image tempCardHolder = new Image(cardUrl);
-            ImageView playerTempCardImgV = new ImageView(tempCardHolder);
+        Image tempCardHolder = new Image(cardUrl);
+        ImageView playerTempCardImgV = new ImageView(tempCardHolder);
 
 
-            playerTempCardImgV.setPreserveRatio(true);
+        playerTempCardImgV.setPreserveRatio(true);
 
-            playerTempCardImgV.setFitWidth(175.0);
+        playerTempCardImgV.setFitWidth(175.0);
 
-            if (firstCardRow.getChildren().size() < 3) {
-                firstCardRow.getChildren().addAll(playerTempCardImgV);
-            } else if (secondCardRow.getChildren().size() < 2){
-                secondCardRow.getChildren().addAll(playerTempCardImgV);
+        if (firstCardRow.getChildren().size() < 3) {
+            firstCardRow.getChildren().addAll(playerTempCardImgV);
+        } else if (secondCardRow.getChildren().size() < 2) {
+            secondCardRow.getChildren().addAll(playerTempCardImgV);
+        } else {
+            System.out.println("Maxed cards pulled");
+            newCardIndex = 100;
+        }
+        getTotalCardValue(cardIndexList);
+        return newCardIndex;
+    }
+
+    ;
+
+    public void displayHouse(HBox firstCardRow, HBox secondCardRow, ArrayList<Integer> cardIndexList, Text txtHouseResult) {
+        txtHouseResult.setText("Computer score: " + getTotalCardValue(cardIndexList));
+
+        firstCardRow.getChildren().clear();
+        secondCardRow.getChildren().clear();
+        for (int cardIndex : cardIndexList) {
+            Image tempCardHolder = new Image(String.format("file:cards/%d.png", cardIndex));
+            ImageView TempCardImgV = new ImageView(tempCardHolder);
+            TempCardImgV.setPreserveRatio(true);
+            TempCardImgV.setFitWidth(175.0);
+            if (firstCardRow.getChildren().size() == 3) {
+                secondCardRow.getChildren().add(TempCardImgV);
             } else {
-                System.out.println("Maxed cards pulled");
-                newCardIndex = 100;
+                firstCardRow.getChildren().add(TempCardImgV);
             }
-            getTotalCardValue(cardIndexList);
-            return newCardIndex;
-        };
+        }
+    }
 
-        public void displayHouse(HBox firstCardRow, HBox secondCardRow, ArrayList<Integer> cardIndexList, Text txtHouseResult) {
-            txtHouseResult.setText("Computer score: " + getTotalCardValue(cardIndexList));
+    public void displayResult(ArrayList<Integer> playerCardIndex, ArrayList<Integer> houseCardIndex, int playerCardValue, int houseCardValue) {
 
-            firstCardRow.getChildren().clear();
-            secondCardRow.getChildren().clear();
-            for (int cardIndex:cardIndexList) {
-                Image tempCardHolder = new Image(String.format("file:cards/%d.png", cardIndex));
-                ImageView TempCardImgV = new ImageView(tempCardHolder);
-                TempCardImgV.setPreserveRatio(true);
-                TempCardImgV.setFitWidth(175.0);
-                if (firstCardRow.getChildren().size() == 3) {
-                    System.out.println("lol");
-                    secondCardRow.getChildren().add(TempCardImgV);
+        basicResultCheck(playerCardValue, houseCardValue);
+
+//        Condition check for 5-cards charlie
+        if (playerCardIndex.size() == 5) {
+
+            if (playerCardValue <= 21) {
+                if (houseCardIndex.size() == 5 && houseCardValue <= 21) {
+                    basicResultCheck(playerCardValue, houseCardValue);
+                } else {
+                    txtResult.setText("YOU'VE WON");
                 }
-                else {
-                    firstCardRow.getChildren().add(TempCardImgV);
+            }
+        }
+        else if (houseCardIndex.size() == 5) {
+
+            if (houseCardValue <= 21) {
+                if (playerCardIndex.size() == 5 && playerCardValue <= 21) {
+                    basicResultCheck(playerCardValue, houseCardValue);
+                } else {
+                    txtResult.setText("YOU'VE LOST");
                 }
             }
         }
 
-        public void getBetResult(ArrayList<Integer> playerCardIndex, ArrayList<Integer> houseCardIndex, int playerScore, int houseScore) {
-            System.out.println("haha");
-            bet = true;
+//        Condition check for blackjack
+        if (playerCardIndex.size() == 2 && playerCardValue == 21) {
+            if (houseCardIndex.size() != 2 || houseCardValue != 21) {
+                txtResult.setText("YOU'VE WON");
+            } else if (houseCardIndex.size() == 2 && houseCardValue == 21)
+                txtResult.setText("DRAW");
+        } else if (houseCardIndex.size() == 2 && playerCardValue == 21) {
+            txtResult.setText("YOU'VE LOST");
         }
+
+    }
+
+    public void basicResultCheck(int playerCardValue, int houseCardValue) {
+        if (playerCardValue > houseCardValue) {
+            if (playerCardValue <= 21) {
+                txtResult.setText("YOU'VE WON");
+            } else {
+                txtResult.setText("YOU'VE LOST");
+            }
+        } else if (houseCardValue > playerCardValue) {
+            if (houseCardValue <= 21) {
+                txtResult.setText("YOU'VE LOST");
+            } else {
+                txtResult.setText("YOU'VE WON");
+            }
+        } else if (playerCardValue == houseCardValue) {
+            txtResult.setText("DRAW");
+        }
+    }
 
     public static void main(String[] args) {
         launch(args);
