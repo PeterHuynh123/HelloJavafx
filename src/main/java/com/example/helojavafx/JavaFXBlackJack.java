@@ -194,6 +194,10 @@ public class JavaFXBlackJack extends Application {
             txtHouseCardValue.setText("Computer card(s) value: ???");
             bet.set(false);
             txtResult.setText("");
+
+            while (getTotalCardValue(houseCardIndex) < 16 && houseCardIndex.size() != 5) {
+                houseCardIndex.add(getAnotherCardIndex(houseCardIndex, houseSideFirstCardRow, houseSideSecondCardRow, false));
+            }
         });
 
 
