@@ -339,7 +339,7 @@ public class JavaFXBlackJack extends Application {
                     basicResultCheck(playerCardValue, houseCardValue);
                 } else {
                     txtResult.setText("YOU'VE WON");
-                    playerBg.setFill(Color.web("#2fd45b"));
+                    playerBg.setFill(Color.web("#15ff00"));
                     houseBg.setFill(Color.web("#cc785c"));
                 }
             }
@@ -351,7 +351,7 @@ public class JavaFXBlackJack extends Application {
                 } else {
                     txtResult.setText("YOU'VE LOST");
                     playerBg.setFill(Color.web("#5ccc7a"));
-                    houseBg.setFill(Color.web("#d6592f"));
+                    houseBg.setFill(Color.web("#ff3c00"));
                 }
             }
         }
@@ -367,6 +367,12 @@ public class JavaFXBlackJack extends Application {
                 playerBg.setFill(Color.web("#5ccc7a"));
                 houseBg.setFill(Color.web("#cc785c"));
             } else if (houseCardIndex.size() == 2 && playerCardValue == 21) {
+                txtResult.setText("YOU'VE LOST");
+                playerBg.setFill(Color.web("#5ccc7a"));
+                houseBg.setFill(Color.web("#ff3c00"));
+            }
+        } else {
+            if (houseCardIndex.size() == 2 && houseCardValue == 21) {
                 txtResult.setText("YOU'VE LOST");
                 playerBg.setFill(Color.web("#5ccc7a"));
                 houseBg.setFill(Color.web("#ff3c00"));
